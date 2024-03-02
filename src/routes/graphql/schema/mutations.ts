@@ -1,4 +1,6 @@
-import { GraphQLInputObjectType, GraphQLString, GraphQLFloat } from "graphql";
+import { GraphQLInputObjectType, GraphQLString, GraphQLFloat, GraphQLBoolean, GraphQLInt } from "graphql";
+import MemberIdType from "../types/memberType.js";
+import { UUIDType } from "../types/uuid.js";
 
 const createUserType = new GraphQLInputObjectType({
   name: "CreateUser",
@@ -16,5 +18,42 @@ const changeUserType = new GraphQLInputObjectType({
   }
 });
 
+const createPostType = new GraphQLInputObjectType({
+  name: "CreatePost",
+  fields: { 
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+    authorId: { type: GraphQLString },
+  }
+});
 
-export { createUserType, changeUserType };
+const changePostType = new GraphQLInputObjectType({
+  name: "CreatePost",
+  fields: { 
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+    authorId: { type: GraphQLString },
+  }
+});
+
+const createProfileType = new GraphQLInputObjectType({
+  name: "CreateProfile",
+  fields: {
+    userId: { type: UUIDType },
+    memberTypeId: { type: MemberIdType },
+    isMale: { type: GraphQLBoolean },
+    yearOfBirth: { type: GraphQLInt }
+  }
+});
+
+const changeProfileType = new GraphQLInputObjectType({
+  name: "ChangeProfile",
+  fields: {
+    memberTypeId: { type: MemberIdType },
+    isMale: { type: GraphQLBoolean },
+    yearOfBirth: { type: GraphQLInt }
+  }
+});
+
+
+export { createUserType, changeUserType, createPostType, changePostType, createProfileType, changeProfileType };

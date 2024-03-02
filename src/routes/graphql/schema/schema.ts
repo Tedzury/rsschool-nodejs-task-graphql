@@ -1,8 +1,8 @@
-import { GraphQLObjectType, GraphQLSchema, GraphQLNonNull, GraphQLList } from 'graphql';
+import { GraphQLObjectType, GraphQLSchema, GraphQLNonNull, GraphQLList, GraphQLBoolean } from 'graphql';
 import { userType, profileType, postType, memberType } from './queries.js';
-import { createUserType, changeUserType } from './mutations.js';
+import { createUserType, changeUserType, createPostType, changePostType, createProfileType, changeProfileType } from './mutations.js';
 import { UUIDType } from '../types/uuid.js';
-import { DbType, MutationsArgs, CreateUserInputArgs} from '../types/prismaTypes.js';
+import { DbType, MutationsArgs, CreateUserInputArgs, CreatePostInputArgs, CreateProfileInputArgs} from '../types/prismaTypes.js';
 import MemberIdType from '../types/memberType.js';
 import { MemberTypeId } from '../../member-types/schemas.js';
 
@@ -94,16 +94,18 @@ const Mutation = new GraphQLObjectType({
         return context.user.create({ data: args.inputObj });
       }
     },
+
     changeUser: {
       type: userType as GraphQLObjectType,
       args: {
-        inputObj: { type: new GraphQLNonNull(changeUserType) },
-        id: { type: new GraphQLNonNull(UUIDType) }
+        id: { type: new GraphQLNonNull(UUIDType) },
+        inputObj: { type: changeUserType },
       },
       resolve: (_, args: MutationsArgs<Partial<CreateUserInputArgs>>, context: DbType) => {
         return context.user.update({ where: { id: args.id }, data: args.inputObj });
       }
     },
+
     deleteUser: {
       type: userType as GraphQLObjectType,
       args: {
@@ -113,7 +115,79 @@ const Mutation = new GraphQLObjectType({
         await context.user.delete({ where: { id: args.id } });
         return true;
       }
-    }
+    },
+
+    createProfile: {
+      type: profileType as GraphQLObjectType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDType) },
+        inputObj: { type: new GraphQLNonNull(createProfileType)},
+      },
+      resolve: (_, args: MutationsArgs<CreateProfileInputArgs>, context: DbType) => {
+        return context.profile.create({ data: args.inputObj })
+      }
+    },
+
+    changeProfile: {
+      type: profileType as GraphQLObjectType,
+      args: {
+        inputObj: { type: changeProfileType },
+      },
+      resolve: (_, args: MutationsArgs<Partial<CreateProfileInputArgs>>, context: DbType) => {
+        return context.profile.update({ where: { id: args.id},  data: args.inputObj })
+      }
+    },
+
+    deleteProfile: {
+      type: GraphQLBoolean,
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType)
+        }
+      },
+      resolve: async (_, args: MutationsArgs<null>, context: DbType) => {
+        await context.profile.delete({ where: { id: args.id }});
+        return true;
+      }
+    },
+
+    createPost: {
+      type: postType as GraphQLObjectType,
+      args: {
+        inputObj: {
+          type: new GraphQLNonNull(createPostType)
+        }
+      },
+      resolve: (_, args: MutationsArgs<CreatePostInputArgs>, context: DbType) => {
+        return context.post.create({ data: args.inputObj });
+      }
+    },
+
+    changePost: {
+      type: postType as GraphQLObjectType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDType) },
+        inputObj: {
+          type: changePostType
+        },
+      },
+      resolve: (_, args: MutationsArgs<Partial<CreatePostInputArgs>>, context: DbType) => {
+        return context.post.update({ where: { id: args.id }, data: args.inputObj });
+      }
+    }, 
+
+    deletePost: {
+      type: GraphQLBoolean,
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType)
+        }
+      },
+      resolve: async (_, args: MutationsArgs<null>, context: DbType) => {
+        await context.post.delete({ where: { id: args.id }});
+        return true;
+      }
+    },
   }
 });
 
