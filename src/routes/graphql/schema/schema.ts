@@ -1,83 +1,10 @@
-import { GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLFloat, GraphQLNonNull, GraphQLList, GraphQLInt, GraphQLBoolean } from 'graphql';
+import { GraphQLObjectType, GraphQLSchema, GraphQLNonNull, GraphQLList } from 'graphql';
+import { userType, profileType, postType, memberType } from './queries.js';
+import { createUserType, changeUserType } from './mutations.js';
 import { UUIDType } from '../types/uuid.js';
-import DbType from '../types/prismaType.js';
+import { DbType, MutationsArgs, CreateUserInputArgs} from '../types/prismaTypes.js';
 import MemberIdType from '../types/memberType.js';
 import { MemberTypeId } from '../../member-types/schemas.js';
-
-const userType = new GraphQLObjectType({
-  name: 'User',
-  fields: () => ({
-    id: { type: UUIDType },
-    name: { type: GraphQLString },
-    balance: { type: GraphQLFloat },
-    profile: {
-      type: profileType as GraphQLObjectType,
-      resolve: (parentObj: { id: string }, _, context: DbType) => {
-        return context.profile.findUnique({ where: { userId: parentObj.id }})
-      }
-    },
-    posts: {
-      type: postType as GraphQLObjectType,
-      resolve: (parentObj: { id: string }, _, context: DbType) => {
-        return context.post.findMany({ where: { authorId: parentObj.id }})
-      }
-    },
-  })
-});
-
-const profileType = new GraphQLObjectType({
-  name: 'Profile',
-  fields: () => ({
-    id: { type: UUIDType },
-    isMale: { type: GraphQLBoolean },
-    yearOfBirth: { type: GraphQLInt },
-    userId: { type: UUIDType },
-    memberTypeId: { type: MemberIdType },
-    user: {
-      type: userType as GraphQLObjectType,
-      resolve: (parentObj: { userId: string, memberTypeId: MemberTypeId }, _, context: DbType) => {
-        return context.user.findUnique({ where: { id: parentObj.userId }});
-      }
-    },
-    memberType: {
-      type: memberType as GraphQLObjectType,
-      resolve: (parentObj: { userId: string, memberTypeId: MemberTypeId }, _, context: DbType) => {
-        return context.memberType.findUnique({ where: { id: parentObj.memberTypeId }})
-      }
-    },
-  })
-});
-
-const postType = new GraphQLObjectType({
-  name: 'Post',
-  fields: () => ({
-    id: { type: UUIDType },
-    title: { type: GraphQLString },
-    content: { type: GraphQLString },
-    authorId: { type: UUIDType },
-    author: {
-      type: userType as GraphQLObjectType,
-      resolve: (parentObj: { authorId: string }, _, context: DbType) => {
-        return context.user.findUnique({ where: { id: parentObj.authorId } })
-      }
-    }
-  })
-})
-
-const memberType = new GraphQLObjectType({
-  name: 'Member',
-  fields: () => ({
-    id: { type: MemberIdType },
-    discount: { type: GraphQLFloat },
-    postsLimitPerMonth: { type: GraphQLInt },
-    profiles: {
-      type: new GraphQLList(profileType),
-      resolve: (parentObj: { id: MemberTypeId }, _, context: DbType) => {
-        return context.profile.findMany({ where: { memberTypeId: parentObj.id } })
-      }
-    }
-  })
-});
 
 const Query = new GraphQLObjectType({
   name: 'Query',
@@ -153,6 +80,43 @@ const Query = new GraphQLObjectType({
   })
 });
 
-const graphQlSchema = new GraphQLSchema({ query: Query });
+const Mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    createUser: {
+      type: userType as GraphQLObjectType,
+      args: {
+        inputObj: {
+          type: new GraphQLNonNull(createUserType)
+        }
+      },
+      resolve: (_, args: MutationsArgs<CreateUserInputArgs>, context: DbType) => {
+        return context.user.create({ data: args.inputObj });
+      }
+    },
+    changeUser: {
+      type: userType as GraphQLObjectType,
+      args: {
+        inputObj: { type: new GraphQLNonNull(changeUserType) },
+        id: { type: new GraphQLNonNull(UUIDType) }
+      },
+      resolve: (_, args: MutationsArgs<Partial<CreateUserInputArgs>>, context: DbType) => {
+        return context.user.update({ where: { id: args.id }, data: args.inputObj });
+      }
+    },
+    deleteUser: {
+      type: userType as GraphQLObjectType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDType) }
+      },
+      resolve: async (_, args: MutationsArgs<null>, context: DbType) => {
+        await context.user.delete({ where: { id: args.id } });
+        return true;
+      }
+    }
+  }
+});
+
+const graphQlSchema = new GraphQLSchema({ query: Query, mutation: Mutation });
 
 export default graphQlSchema;
