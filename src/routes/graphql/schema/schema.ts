@@ -10,15 +10,18 @@ const userType = new GraphQLObjectType({
     id: { type: UUIDType },
     name: { type: GraphQLString },
     balance: { type: GraphQLFloat },
-  })
-});
-
-const memberType = new GraphQLObjectType({
-  name: 'Member',
-  fields: () => ({
-    id: { type: MemberIdType },
-    discount: { type: GraphQLFloat },
-    postsLimitPerMonth: { type: GraphQLInt }
+    profile: {
+      type: profileType as GraphQLObjectType,
+      resolve: (parentObj: { id: string }, _, context: DbType) => {
+        return context.profile.findUnique({ where: { userId: parentObj.id }})
+      }
+    },
+    posts: {
+      type: postType as GraphQLObjectType,
+      resolve: (parentObj: { id: string }, _, context: DbType) => {
+        return context.post.findMany({ where: { authorId: parentObj.id }})
+      }
+    },
   })
 });
 
@@ -29,7 +32,19 @@ const profileType = new GraphQLObjectType({
     isMale: { type: GraphQLBoolean },
     yearOfBirth: { type: GraphQLInt },
     userId: { type: UUIDType },
-    memberType: { type: MemberIdType }
+    memberTypeId: { type: MemberIdType },
+    user: {
+      type: userType as GraphQLObjectType,
+      resolve: (parentObj: { userId: string, memberTypeId: MemberTypeId }, _, context: DbType) => {
+        return context.user.findUnique({ where: { id: parentObj.userId }});
+      }
+    },
+    memberType: {
+      type: memberType as GraphQLObjectType,
+      resolve: (parentObj: { userId: string, memberTypeId: MemberTypeId }, _, context: DbType) => {
+        return context.memberType.findUnique({ where: { id: parentObj.memberTypeId }})
+      }
+    },
   })
 });
 
@@ -39,17 +54,36 @@ const postType = new GraphQLObjectType({
     id: { type: UUIDType },
     title: { type: GraphQLString },
     content: { type: GraphQLString },
-    authorId: { type: UUIDType }
+    authorId: { type: UUIDType },
+    author: {
+      type: userType as GraphQLObjectType,
+      resolve: (parentObj: { authorId: string }, _, context: DbType) => {
+        return context.user.findUnique({ where: { id: parentObj.authorId } })
+      }
+    }
   })
-
 })
 
+const memberType = new GraphQLObjectType({
+  name: 'Member',
+  fields: () => ({
+    id: { type: MemberIdType },
+    discount: { type: GraphQLFloat },
+    postsLimitPerMonth: { type: GraphQLInt },
+    profiles: {
+      type: new GraphQLList(profileType),
+      resolve: (parentObj: { id: MemberTypeId }, _, context: DbType) => {
+        return context.profile.findMany({ where: { memberTypeId: parentObj.id } })
+      }
+    }
+  })
+});
 
 const Query = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
     user: {
-      type: userType,
+      type: userType as GraphQLObjectType,
       args: {
         id: {
           type: new GraphQLNonNull(UUIDType)
@@ -65,25 +99,8 @@ const Query = new GraphQLObjectType({
         return context.user.findMany()
       } 
     },
-    memberType: {
-      type: memberType,
-      args: {
-        id: {
-          type: new GraphQLNonNull(MemberIdType)
-        }
-      },
-      resolve: (_, args: { id: MemberTypeId }, context: DbType ) => {
-        return context.memberType.findUnique({ where: { id: args.id }})
-      }
-    },
-    memberTypes: {
-      type: new GraphQLList(MemberIdType),
-      resolve: (_, __, context: DbType) => {
-        return context.memberType.findMany();
-      }
-    },
     profile: { 
-      type: profileType,
+      type: profileType as GraphQLObjectType,
       args: {
         id: {
           type: new GraphQLNonNull(UUIDType)
@@ -115,7 +132,24 @@ const Query = new GraphQLObjectType({
       resolve: (_, __, context: DbType) => {
         return context.post.findMany();
       }
-    }
+    },
+    memberType: {
+      type: memberType as GraphQLObjectType,
+      args: {
+        id: {
+          type: new GraphQLNonNull(MemberIdType)
+        }
+      },
+      resolve: (_, args: { id: MemberTypeId }, context: DbType ) => {
+        return context.memberType.findUnique({ where: { id: args.id }})
+      }
+    },
+    memberTypes: {
+      type: new GraphQLList(MemberIdType),
+      resolve: (_, __, context: DbType) => {
+        return context.memberType.findMany();
+      }
+    },
   })
 });
 
