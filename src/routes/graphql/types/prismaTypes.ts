@@ -25,7 +25,11 @@ type CreateProfileInputArgs = {
   memberTypeId: MemberTypeId,
   isMale: boolean,
   yearOfBirth: number
+};
 
-}
+type SubsManageArgs = {
+  authorId: string;
+  userId: string;
+};
 
-export type { DbType, MutationsArgs, CreateUserInputArgs, CreatePostInputArgs, CreateProfileInputArgs }
+export type { DbType, MutationsArgs, CreateUserInputArgs, CreatePostInputArgs, CreateProfileInputArgs, SubsManageArgs }

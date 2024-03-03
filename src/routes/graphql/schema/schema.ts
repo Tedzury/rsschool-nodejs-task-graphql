@@ -2,8 +2,8 @@ import { GraphQLObjectType, GraphQLSchema, GraphQLNonNull, GraphQLList, GraphQLB
 import { userType, profileType, postType, memberType } from './queries.js';
 import { createUserType, changeUserType, createPostType, changePostType, createProfileType, changeProfileType } from './mutations.js';
 import { UUIDType } from '../types/uuid.js';
-import { DbType, MutationsArgs, CreateUserInputArgs, CreatePostInputArgs, CreateProfileInputArgs} from '../types/prismaTypes.js';
-import MemberIdType from '../types/memberType.js';
+import { DbType, MutationsArgs, CreateUserInputArgs, CreatePostInputArgs, CreateProfileInputArgs, SubsManageArgs } from '../types/prismaTypes.js';
+import { MemberTypeIdEnum } from '../types/member.js';
 import { MemberTypeId } from '../../member-types/schemas.js';
 
 const Query = new GraphQLObjectType({
@@ -64,7 +64,7 @@ const Query = new GraphQLObjectType({
       type: memberType as GraphQLObjectType,
       args: {
         id: {
-          type: new GraphQLNonNull(MemberIdType)
+          type: new GraphQLNonNull(MemberTypeIdEnum)
         }
       },
       resolve: (_, args: { id: MemberTypeId }, context: DbType ) => {
@@ -72,7 +72,7 @@ const Query = new GraphQLObjectType({
       }
     },
     memberTypes: {
-      type: new GraphQLList(MemberIdType),
+      type: new GraphQLList(memberType),
       resolve: (_, __, context: DbType) => {
         return context.memberType.findMany();
       }
@@ -188,6 +188,34 @@ const Mutation = new GraphQLObjectType({
         return true;
       }
     },
+
+    subscribeTo: {
+      type: userType as GraphQLObjectType,
+      args: {
+        userId: { type: new GraphQLNonNull(UUIDType) },
+        authorId: { type: new GraphQLNonNull(UUIDType) }
+      },
+      resolve: async (_, args: SubsManageArgs, context: DbType) => {
+        const res = await context.user.update({ where: { id: args.userId }, data: { 
+          userSubscribedTo: { create: { authorId: args.authorId }}
+        }});
+        return res;
+      }
+    },
+
+    unsubscribeFrom: {
+      type: GraphQLBoolean,
+      args: {
+        userId: { type: new GraphQLNonNull(UUIDType) },
+        authorId: { type: new GraphQLNonNull(UUIDType) }
+      },
+      resolve: async (_, args: SubsManageArgs, context: DbType) => {
+        await context.subscribersOnAuthors.delete({ where: { subscriberId_authorId: {
+          subscriberId: args.userId, authorId: args.authorId
+        } }})
+        return true;
+      }
+    }
   }
 });
 

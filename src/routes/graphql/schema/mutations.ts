@@ -1,5 +1,5 @@
 import { GraphQLInputObjectType, GraphQLString, GraphQLFloat, GraphQLBoolean, GraphQLInt } from "graphql";
-import MemberIdType from "../types/memberType.js";
+import { MemberTypeIdEnum } from "../types/member.js";
 import { UUIDType } from "../types/uuid.js";
 
 const createUserType = new GraphQLInputObjectType({
@@ -28,7 +28,7 @@ const createPostType = new GraphQLInputObjectType({
 });
 
 const changePostType = new GraphQLInputObjectType({
-  name: "CreatePost",
+  name: "ChangePost",
   fields: { 
     title: { type: GraphQLString },
     content: { type: GraphQLString },
@@ -40,7 +40,7 @@ const createProfileType = new GraphQLInputObjectType({
   name: "CreateProfile",
   fields: {
     userId: { type: UUIDType },
-    memberTypeId: { type: MemberIdType },
+    memberTypeId: { type: MemberTypeIdEnum },
     isMale: { type: GraphQLBoolean },
     yearOfBirth: { type: GraphQLInt }
   }
@@ -49,7 +49,7 @@ const createProfileType = new GraphQLInputObjectType({
 const changeProfileType = new GraphQLInputObjectType({
   name: "ChangeProfile",
   fields: {
-    memberTypeId: { type: MemberIdType },
+    memberTypeId: { type: MemberTypeIdEnum },
     isMale: { type: GraphQLBoolean },
     yearOfBirth: { type: GraphQLInt }
   }
