@@ -86,12 +86,12 @@ const Mutation = new GraphQLObjectType({
     createUser: {
       type: userType as GraphQLObjectType,
       args: {
-        inputObj: {
+        dto: {
           type: new GraphQLNonNull(createUserType)
         }
       },
       resolve: (_, args: MutationsArgs<CreateUserInputArgs>, context: DbType) => {
-        return context.user.create({ data: args.inputObj });
+        return context.user.create({ data: args.dto });
       }
     },
 
@@ -99,15 +99,15 @@ const Mutation = new GraphQLObjectType({
       type: userType as GraphQLObjectType,
       args: {
         id: { type: new GraphQLNonNull(UUIDType) },
-        inputObj: { type: changeUserType },
+        dto: { type: changeUserType },
       },
       resolve: (_, args: MutationsArgs<Partial<CreateUserInputArgs>>, context: DbType) => {
-        return context.user.update({ where: { id: args.id }, data: args.inputObj });
+        return context.user.update({ where: { id: args.id }, data: args.dto });
       }
     },
 
     deleteUser: {
-      type: userType as GraphQLObjectType,
+      type: GraphQLBoolean,
       args: {
         id: { type: new GraphQLNonNull(UUIDType) }
       },
@@ -120,21 +120,21 @@ const Mutation = new GraphQLObjectType({
     createProfile: {
       type: profileType as GraphQLObjectType,
       args: {
-        id: { type: new GraphQLNonNull(UUIDType) },
-        inputObj: { type: new GraphQLNonNull(createProfileType)},
+        dto: { type: new GraphQLNonNull(createProfileType)},
       },
       resolve: (_, args: MutationsArgs<CreateProfileInputArgs>, context: DbType) => {
-        return context.profile.create({ data: args.inputObj })
+        return context.profile.create({ data: args.dto })
       }
     },
 
     changeProfile: {
       type: profileType as GraphQLObjectType,
       args: {
-        inputObj: { type: changeProfileType },
+        id: { type: new GraphQLNonNull(UUIDType)},
+        dto: { type: changeProfileType },
       },
       resolve: (_, args: MutationsArgs<Partial<CreateProfileInputArgs>>, context: DbType) => {
-        return context.profile.update({ where: { id: args.id},  data: args.inputObj })
+        return context.profile.update({ where: { id: args.id},  data: args.dto })
       }
     },
 
@@ -154,12 +154,12 @@ const Mutation = new GraphQLObjectType({
     createPost: {
       type: postType as GraphQLObjectType,
       args: {
-        inputObj: {
+        dto: {
           type: new GraphQLNonNull(createPostType)
         }
       },
       resolve: (_, args: MutationsArgs<CreatePostInputArgs>, context: DbType) => {
-        return context.post.create({ data: args.inputObj });
+        return context.post.create({ data: args.dto });
       }
     },
 
@@ -167,12 +167,12 @@ const Mutation = new GraphQLObjectType({
       type: postType as GraphQLObjectType,
       args: {
         id: { type: new GraphQLNonNull(UUIDType) },
-        inputObj: {
+        dto: {
           type: changePostType
         },
       },
       resolve: (_, args: MutationsArgs<Partial<CreatePostInputArgs>>, context: DbType) => {
-        return context.post.update({ where: { id: args.id }, data: args.inputObj });
+        return context.post.update({ where: { id: args.id }, data: args.dto });
       }
     }, 
 

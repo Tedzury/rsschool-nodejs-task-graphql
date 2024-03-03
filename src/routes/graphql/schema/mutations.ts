@@ -3,23 +3,23 @@ import { MemberTypeIdEnum } from "../types/member.js";
 import { UUIDType } from "../types/uuid.js";
 
 const createUserType = new GraphQLInputObjectType({
-  name: "CreateUser",
+  name: "CreateUserInput",
   fields: {
-    name: { type:  GraphQLString},
+    name: { type: GraphQLString},
     balance: { type: GraphQLFloat }
   }
 });
 
 const changeUserType = new GraphQLInputObjectType({
-  name: "ChangeUser",
+  name: "ChangeUserInput",
   fields: {
-    name: { type:  GraphQLString},
+    name: { type:  GraphQLString },
     balance: { type: GraphQLFloat }
   }
 });
 
 const createPostType = new GraphQLInputObjectType({
-  name: "CreatePost",
+  name: "CreatePostInput",
   fields: { 
     title: { type: GraphQLString },
     content: { type: GraphQLString },
@@ -28,7 +28,7 @@ const createPostType = new GraphQLInputObjectType({
 });
 
 const changePostType = new GraphQLInputObjectType({
-  name: "ChangePost",
+  name: "ChangePostInput",
   fields: { 
     title: { type: GraphQLString },
     content: { type: GraphQLString },
@@ -37,7 +37,7 @@ const changePostType = new GraphQLInputObjectType({
 });
 
 const createProfileType = new GraphQLInputObjectType({
-  name: "CreateProfile",
+  name: "CreateProfileInput",
   fields: {
     userId: { type: UUIDType },
     memberTypeId: { type: MemberTypeIdEnum },
@@ -47,7 +47,7 @@ const createProfileType = new GraphQLInputObjectType({
 });
 
 const changeProfileType = new GraphQLInputObjectType({
-  name: "ChangeProfile",
+  name: "ChangeProfileInput",
   fields: {
     memberTypeId: { type: MemberTypeIdEnum },
     isMale: { type: GraphQLBoolean },

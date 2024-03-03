@@ -5,7 +5,7 @@ import { MemberTypeId } from "../../member-types/schemas.js";
 type DbType = PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>;
 
 type MutationsArgs<O> = {
-  inputObj: O;
+  dto: O;
   id: string;
 };
 
